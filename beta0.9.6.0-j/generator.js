@@ -284,7 +284,6 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
         var goalsAtTime = this.getGoalsInTimeRange(minTime, maxTime);
         goalsAtTime = goalsAtTime.shuffled();
 
-        console.log(`Pos ${position}: ${goalsAtTime.length} goals in range ${minTime}-${maxTime} for desired ${desiredTime} (difficulty ${desiredDifficulty})`)
 
         // scan through each goal at this difficulty level
         for (var j = 0; j < goalsAtTime.length; j++) {
@@ -304,15 +303,12 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
             }
 
             var synergies = this.checkLine(position, goal);
-            console.log(synergies)
 
             if (this.maximumSynergy >= synergies.maxSynergy && synergies.minSynergy >= this.minimumSynergy) {
-                console.log(`Picked ${goal.name}`)
                 return {goal: goal, synergy: synergies.maxSynergy};
             }
         }
     }
-    console.log("Failed.")
     return false;
 };
 
@@ -759,12 +755,12 @@ ootBingoGenerator = function (bingoList, opts) {
         iterations++;
     }
 
-    card["meta"] = {iterations: iterations};
-
     if (!card) {
         console.log();
         console.log(iterations);
     }
+
+    card["meta"] = {iterations: iterations};
 
     return card;
 };
