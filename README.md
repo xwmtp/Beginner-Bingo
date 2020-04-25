@@ -1,7 +1,4 @@
-# OoT Exploration Bingo
+# OoT Beginner Bingo
+A variation on Ocarina of Time Bingo aimed at beginners. All the boards are 4x4 instead of 5x5. All the goals are also present in regular bingo, but the most complex goals and goals that require RBA are taken out. It can still be optimal to use RBA in some goals though.
 
-Bingo variation where you only see two initial goals from the start, and get access to the adjacent goals when you complete one.
-
-You can find Exploration Bingo at https://ootbingo.github.io/exploration-bingo.
-
-Originally created by Gombill. Redesigned in React.js by xwillmarktheplace.
+You can find Beginner Bingo at https://ootbingo.github.io/beginner-bingo/beta9.5.0-j/bingo.html.
