@@ -29,7 +29,7 @@ var DEFAULT_PROFILE = {
     defaultMaximumSpill: 2,
     defaultInitialOffset: 1,
     defaultMaximumOffset: 3,
-    baselineTime: 24.75,
+    baselineTime: 28.25,
     timePerDifficulty: 1
 };
 
