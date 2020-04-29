@@ -24,7 +24,7 @@ var SQUARES_PER_ROW = 4;
  */
 var DEFAULT_PROFILE = {
     defaultMinimumSynergy: -3,
-    defaultMaximumSynergy: 5,
+    defaultMaximumSynergy: 5.5,
     defaultMaximumIndividualSynergy: 3.75,
     defaultMaximumSpill: 2,
     defaultInitialOffset: 1,
@@ -44,17 +44,6 @@ var NORMAL_PROFILE = {
     timePerDifficulty: DEFAULT_PROFILE.timePerDifficulty
 };
 
-var SHORT_PROFILE = {
-    defaultMinimumSynergy: DEFAULT_PROFILE.defaultMinimumSynergy,
-    defaultMaximumSynergy: 3,
-    defaultMaximumIndividualSynergy: DEFAULT_PROFILE.defaultMaximumIndividualSynergy,
-    defaultMaximumSpill: DEFAULT_PROFILE.defaultMaximumSpill,
-    defaultInitialOffset: DEFAULT_PROFILE.defaultInitialOffset,
-    defaultMaximumOffset: DEFAULT_PROFILE.defaultMaximumOffset,
-    baselineTime: 12,
-    timePerDifficulty: 0.5
-};
-
 var BLACKOUT_PROFILE = {
     defaultMinimumSynergy: -10,
     defaultMaximumSynergy: 10,
@@ -64,17 +53,6 @@ var BLACKOUT_PROFILE = {
     defaultMaximumOffset: 6,
     baselineTime: DEFAULT_PROFILE.baselineTime,
     timePerDifficulty: DEFAULT_PROFILE.timePerDifficulty
-};
-
-var SHORTBLACKOUT_PROFILE = {
-    defaultMinimumSynergy: -4,
-    defaultMaximumSynergy: 4,
-    defaultMaximumIndividualSynergy: DEFAULT_PROFILE.defaultMaximumIndividualSynergy,
-    defaultMaximumSpill: DEFAULT_PROFILE.defaultMaximumSpill,
-    defaultInitialOffset: 2,
-    defaultMaximumOffset: 6,
-    baselineTime: 12,
-    timePerDifficulty: 0.5
 };
 
 Array.prototype.sortNumerically = function() {
@@ -194,10 +172,7 @@ var BingoGenerator = function(bingoList, options) {
     }
 
     this.profile = NORMAL_PROFILE;
-    if (this.mode === 'short') {
-        this.profile = SHORT_PROFILE;
-    }
-    else if (this.mode === 'blackout') {
+    if (this.mode === 'blackout') {
         this.profile = BLACKOUT_PROFILE;
     }
 
