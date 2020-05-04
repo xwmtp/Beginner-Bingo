@@ -226,15 +226,24 @@ BingoGenerator.prototype.makeCard = function() {
  * Generate an initial magic square of difficulties based on the random seed
  * @returns {Array}
  */
-BingoGenerator.prototype.generateMagicSquare = function() {
-    var magicSquare = [];
+BingoGenerator.prototype.generateMagicSquare = function () {
 
-    for (var i = 1; i <= 16; i++) {
-        var difficulty = this.difficulty(i);
+    let magicSquareRows = [...magicSquares[this.seed % 880]];
 
+    // randomly flip square
+    if (Math.floor(this.seed / 880) % 2 == 0) {
+        magicSquareRows.reverse();
+    }
+
+    const magicSquareList = magicSquareRows.flat();
+
+    let magicSquare = [];
+
+    // use indices starting from 1
+    for (let i = 1; i <= 16; i++) {
         magicSquare[i] = {
-            difficulty: difficulty,
-            desiredTime: difficulty * this.timePerDifficulty
+            difficulty: magicSquareList[i - 1],
+            desiredTime: magicSquareList[i - 1] * this.timePerDifficulty
         };
     }
 
@@ -259,8 +268,6 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
         var goalsAtTime = this.getGoalsInTimeRange(minTime, maxTime);
         goalsAtTime = goalsAtTime.shuffled();
 
-        console.log(`Pos ${position}: ${goalsAtTime.length} goals in range ${minTime}-${maxTime} for desired ${desiredTime} (difficulty ${desiredDifficulty})`)
-
         // scan through each goal at this difficulty level
         for (var j = 0; j < goalsAtTime.length; j++) {
             var goal = goalsAtTime[j];
@@ -279,15 +286,12 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
             }
 
             var synergies = this.checkLine(position, goal);
-            console.log(synergies)
 
             if (this.maximumSynergy >= synergies.maxSynergy && synergies.minSynergy >= this.minimumSynergy) {
-                console.log(`Picked ${goal.name}`)
                 return {goal: goal, synergy: synergies.maxSynergy};
             }
         }
     }
-    console.log("Failed.")
     return false;
 };
 

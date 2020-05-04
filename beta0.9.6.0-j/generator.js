@@ -55,13 +55,13 @@ var BLACKOUT_PROFILE = {
     timePerDifficulty: DEFAULT_PROFILE.timePerDifficulty
 };
 
-Array.prototype.sortNumerically = function() {
-    return this.sort(function(a, b) {
+Array.prototype.sortNumerically = function () {
+    return this.sort(function (a, b) {
         return a - b;
     });
 };
 
-Array.prototype.shuffled = function() {
+Array.prototype.shuffled = function () {
     var toShuffle = this.slice();
     for (var i = 0; i < toShuffle.length; i++) {
         var randElement = Math.floor(Math.random() * (i + 1));
@@ -117,7 +117,7 @@ function invertObject(obj) {
 // for example, ROWS_PER_INDEX[1] returns ["row1", "col1", "tlbr"]
 var ROWS_PER_INDEX = invertObject(INDICES_PER_ROW);
 
-var BingoGenerator = function(bingoList, options) {
+var BingoGenerator = function (bingoList, options) {
     if (!options) {
         options = {};
     }
@@ -147,7 +147,7 @@ var BingoGenerator = function(bingoList, options) {
     for (var i = 1; i <= 25; i++) {
         this.goalsList = this.goalsList.concat(bingoList[i]);
     }
-    this.goalsList.sort(function(a, b) {
+    this.goalsList.sort(function (a, b) {
         var timeDiff = a.time - b.time;
 
         if (timeDiff !== 0) {
@@ -190,7 +190,7 @@ var BingoGenerator = function(bingoList, options) {
 };
 
 //Main entry point
-BingoGenerator.prototype.makeCard = function() {
+BingoGenerator.prototype.makeCard = function () {
     // set up the bingo board by filling in the difficulties based on a magic square
     this.bingoBoard = this.generateMagicSquare();
 
@@ -226,15 +226,24 @@ BingoGenerator.prototype.makeCard = function() {
  * Generate an initial magic square of difficulties based on the random seed
  * @returns {Array}
  */
-BingoGenerator.prototype.generateMagicSquare = function() {
-    var magicSquare = [];
+BingoGenerator.prototype.generateMagicSquare = function () {
 
-    for (var i = 1; i <= 16; i++) {
-        var difficulty = this.difficulty(i);
+    let magicSquareRows = [...magicSquares[this.seed % 880]];
 
+    // randomly flip square
+    if (Math.floor(this.seed / 880) % 2 == 0) {
+        magicSquareRows.reverse();
+    }
+
+    const magicSquareList = magicSquareRows.flat();
+
+    let magicSquare = [];
+
+    // use indices starting from 1
+    for (let i = 1; i <= 16; i++) {
         magicSquare[i] = {
-            difficulty: difficulty,
-            desiredTime: difficulty * this.timePerDifficulty
+            difficulty: magicSquareList[i - 1],
+            desiredTime: magicSquareList[i - 1] * this.timePerDifficulty
         };
     }
 
@@ -247,7 +256,7 @@ BingoGenerator.prototype.generateMagicSquare = function() {
  * @param position  the position on the board that we want to find a goal for
  * @returns  {goal, synergy} or false
  */
-BingoGenerator.prototype.chooseGoalForPosition = function(position) {
+BingoGenerator.prototype.chooseGoalForPosition = function (position) {
     var desiredDifficulty = this.bingoBoard[position].difficulty;
     var desiredTime = desiredDifficulty * this.timePerDifficulty;
 
@@ -280,7 +289,7 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
             var synergies = this.checkLine(position, goal);
 
             if (this.maximumSynergy >= synergies.maxSynergy && synergies.minSynergy >= this.minimumSynergy) {
-                return {goal: goal, synergy: synergies.maxSynergy};
+                return { goal: goal, synergy: synergies.maxSynergy };
             }
         }
     }
@@ -291,7 +300,7 @@ BingoGenerator.prototype.chooseGoalForPosition = function(position) {
  * Generate a semi-random order to populate the bingo board goals in
  * @returns {Array}
  */
-BingoGenerator.prototype.generatePopulationOrder = function() {
+BingoGenerator.prototype.generatePopulationOrder = function () {
     //giuocob 19-2-13: this.bingoBoard is no longer populated left to right:
     //It is now populated mostly randomly, with high difficult goals and
     //goals on the diagonals out in front
@@ -324,69 +333,14 @@ BingoGenerator.prototype.generatePopulationOrder = function() {
     return populationOrder;
 };
 
-// uses a magic square to calculate the intended difficulty of a location on the bingo board
-BingoGenerator.prototype.difficulty = function(i) {
-    // To create the magic square we need 2 random orderings of the numbers 0, 1, 2, 3, 4.
-    // The following creates those orderings and calls them Table5 and Table1
-
-    var Num3 = this.seed % 1000; // Table5 will use the ones, tens, and hundreds digits.
-
-    var Rem8 = Num3 % 8;
-    var Rem4 = Math.floor(Rem8 / 2);
-    var Rem2 = Rem8 % 2;
-    var Rem3 = Num3 % 3;    // Note that Rem2, Rem3, Rem4, and Rem5 are mathematically independent.
-    var RemT = Math.floor(Num3 / 120);  // This is between 0 and 8
-
-    // The idea is to begin with an array containing a single number, 0.
-    // Each number 1 through 4 is added in a random spot in the array's current size.
-    // The result - the numbers 0 to 4 are in the array in a random (and uniform) order.
-    var Table5 = [0];
-    Table5.splice(Rem2, 0, 1);
-    Table5.splice(Rem3, 0, 2);
-    Table5.splice(Rem4, 0, 3);
-
-    Num3 = Math.floor(this.seed / 1000); // Table1 will use the next 3 digits.
-    Num3 = Num3 % 1000;
-
-    Rem8 = Num3 % 8;
-    Rem4 = Math.floor(Rem8 / 2);
-    Rem2 = Rem8 % 2;
-    Rem3 = Num3 % 3;
-    RemT = RemT * 8 + Math.floor(Num3 / 120);   // This is between 0 and 64.
-
-    var Table1 = [0];
-    Table1.splice(Rem2, 0, 1);
-    Table1.splice(Rem3, 0, 2);
-    Table1.splice(Rem4, 0, 3);
-
-    i--;
-    RemT = RemT % 4;        //  Between 0 and 4, fairly uniformly.
-    x = (i + RemT) % 4;     //  RemT is horizontal shift to put any diagonal on the main diagonal.
-    y = Math.floor(i / 4);
-
-    // The Tables are set into a single magic square template
-    // Some are the same up to some rotation, reflection, or row permutation.
-    // However, all genuinely different magic squares can arise in this fashion.
-    var e5 = Table5[(x + 2 * y) % 4];
-    var e1 = Table1[(2 * x + y) % 4];
-
-    // Table5 controls the 5* part and Table1 controls the 1* part.
-    value = 4 * e5 + e1;
-
-    if (this.mode == "long") {
-        value = Math.floor((value + 16) / 2);
-    }
-    value++;
-    return value;
-};
 
 //Get a uniformly shuffled array of all the goals of a given difficulty tier
-BingoGenerator.prototype.getShuffledGoals = function(difficulty) {
+BingoGenerator.prototype.getShuffledGoals = function (difficulty) {
     return this.goalsByDifficulty[difficulty].shuffled();
 };
 
 //Given a difficulty as an argument, find the square that contains that difficulty
-BingoGenerator.prototype.getDifficultyIndex = function(difficulty) {
+BingoGenerator.prototype.getDifficultyIndex = function (difficulty) {
     for (var i = 1; i <= 16; i++) {
         if (this.bingoBoard[i].difficulty == difficulty) {
             return i;
@@ -403,10 +357,10 @@ BingoGenerator.prototype.getDifficultyIndex = function(difficulty) {
  * @param maxTime  the maximum acceptable time, inclusive
  * @returns {Array.<T>}  sorted array of goals within the range of times
  */
-BingoGenerator.prototype.getGoalsInTimeRange = function(minTime, maxTime) {
+BingoGenerator.prototype.getGoalsInTimeRange = function (minTime, maxTime) {
     // if linear scan ends up being too slow, we can optimize this by finding the min using binary search
     // and bailing out early after the first goal exceeds maxTime
-    return this.goalsList.filter(function(goal) {
+    return this.goalsList.filter(function (goal) {
         return minTime <= goal.time && goal.time <= maxTime && goal.beginnervars.included === 1;
     });
 };
@@ -418,7 +372,7 @@ BingoGenerator.prototype.getGoalsInTimeRange = function(minTime, maxTime) {
  * @param goal  the goal to check for
  * @returns {boolean}  true if the goal is on the board, false otherwise
  */
-BingoGenerator.prototype.hasGoalOnBoard = function(goal) {
+BingoGenerator.prototype.hasGoalOnBoard = function (goal) {
     for (var i = 1; i <= 16; i++) {
         if (this.bingoBoard[i].id === goal.id) {
             return true;
@@ -434,7 +388,7 @@ BingoGenerator.prototype.hasGoalOnBoard = function(goal) {
  * @param goal  the goal to check for conflicts with (not already on the board)
  * @returns {boolean} true if the board contains goals that conflict with the given goal
  */
-BingoGenerator.prototype.hasConflictsOnBoard = function(goal) {
+BingoGenerator.prototype.hasConflictsOnBoard = function (goal) {
     for (var i = 1; i <= 16; i++) {
         var square = this.bingoBoard[i];
         if (square.goal) {
@@ -459,14 +413,14 @@ BingoGenerator.prototype.hasConflictsOnBoard = function(goal) {
  * @param position  the position to ignore
  * @returns {*|Array}
  */
-BingoGenerator.prototype.getOtherSquares = function(row, position) {
-    var rowIndices = INDICES_PER_ROW[row].filter(function(index) {
+BingoGenerator.prototype.getOtherSquares = function (row, position) {
+    var rowIndices = INDICES_PER_ROW[row].filter(function (index) {
         return index != position;
     });
 
     var board = this;
 
-    return rowIndices.map(function(index) {
+    return rowIndices.map(function (index) {
         return board.bingoBoard[index];
     });
 };
@@ -478,7 +432,7 @@ BingoGenerator.prototype.getOtherSquares = function(row, position) {
  * @param potentialGoal  the goal that we're considering adding to the position
  * @returns {number}  the maximum synergy that the goal would have at that position
  */
-BingoGenerator.prototype.checkLine = function(position, potentialGoal) {
+BingoGenerator.prototype.checkLine = function (position, potentialGoal) {
     var rows = ROWS_PER_INDEX[position];
     var maxSynergy = 0;
     var minSynergy = TOO_MUCH_SYNERGY;
@@ -512,11 +466,11 @@ BingoGenerator.prototype.checkLine = function(position, potentialGoal) {
  * @param row  the string name of the row to check
  * @returns {number}
  */
-BingoGenerator.prototype.evaluateRow = function(row) {
+BingoGenerator.prototype.evaluateRow = function (row) {
     return this.evaluateSquares(this.getOtherSquares(row));
 };
 
-BingoGenerator.prototype.getEffectiveTypeSynergiesForRow = function(row) {
+BingoGenerator.prototype.getEffectiveTypeSynergiesForRow = function (row) {
     var synergiesForSquares = this.calculateSynergiesForSquares(this.getOtherSquares(row));
     var effectiveTypeSynergies = this.calculateEffectiveTypeSynergies(this.calculateCombinedTypeSynergies(synergiesForSquares));
     var rowtypeSynergies = this.filterRowtypeSynergies(synergiesForSquares);
@@ -528,11 +482,11 @@ BingoGenerator.prototype.getEffectiveTypeSynergiesForRow = function(row) {
  * This is determined using the type and subtype information of the goals in each square.
  * @param squares
  */
-BingoGenerator.prototype.evaluateSquares = function(squares) {
+BingoGenerator.prototype.evaluateSquares = function (squares) {
     // bail out if there are duplicate goals
     // NOTE: keep this in addition to the duplicate checking from chooseGoalForPosition
     // because this still detects cases from hardcoded boards for analysis
-    var ids = squares.map(function(el) { return el.id; }).filter(function(el) { return el; });
+    var ids = squares.map(function (el) { return el.id; }).filter(function (el) { return el; });
     if (hasDuplicateStrings(ids)) {
         return TOO_MUCH_SYNERGY;
     }
@@ -542,7 +496,7 @@ BingoGenerator.prototype.evaluateSquares = function(squares) {
 };
 
 // aggregates type synergy data from the squares in a row for later use
-BingoGenerator.prototype.calculateSynergiesForSquares = function(squares) {
+BingoGenerator.prototype.calculateSynergiesForSquares = function (squares) {
     // a map of type -> list of type synergy values
     var typeSynergies = {};
     // a map of subtype -> list of subtype synergy values
@@ -575,7 +529,7 @@ BingoGenerator.prototype.calculateSynergiesForSquares = function(squares) {
 };
 
 // helper method for implementing calculateSynergiesForSquares
-BingoGenerator.prototype.mergeTypeSynergies = function(typeSynergies, newTypeSynergies) {
+BingoGenerator.prototype.mergeTypeSynergies = function (typeSynergies, newTypeSynergies) {
     for (var type in newTypeSynergies) {
         if (!typeSynergies[type]) {
             typeSynergies[type] = [];
@@ -585,7 +539,7 @@ BingoGenerator.prototype.mergeTypeSynergies = function(typeSynergies, newTypeSyn
     }
 };
 
-BingoGenerator.prototype.calculateCombinedTypeSynergies = function(synergiesForSquares) {
+BingoGenerator.prototype.calculateCombinedTypeSynergies = function (synergiesForSquares) {
     var typeSynergies = synergiesForSquares.typeSynergies;
     var subtypeSynergies = synergiesForSquares.subtypeSynergies;
 
@@ -609,7 +563,7 @@ BingoGenerator.prototype.calculateCombinedTypeSynergies = function(synergiesForS
  * Filters rowtypeSynergies to only include entries that are present in every square of the board
  * @param synergiesForSquares
  */
-BingoGenerator.prototype.filterRowtypeSynergies = function(synergiesForSquares) {
+BingoGenerator.prototype.filterRowtypeSynergies = function (synergiesForSquares) {
     var rowtypeSynergies = {};
 
     for (var rowtype in synergiesForSquares.rowtypeSynergies) {
@@ -639,7 +593,7 @@ BingoGenerator.prototype.filterRowtypeSynergies = function(synergiesForSquares) 
     return rowtypeSynergies;
 };
 
-BingoGenerator.prototype.calculateEffectiveTypeSynergies = function(typeSynergies) {
+BingoGenerator.prototype.calculateEffectiveTypeSynergies = function (typeSynergies) {
     var effectiveTypeSynergies = {};
 
     for (var type in typeSynergies) {
@@ -655,7 +609,7 @@ BingoGenerator.prototype.calculateEffectiveTypeSynergies = function(typeSynergie
     return effectiveTypeSynergies;
 };
 
-BingoGenerator.prototype.filterSynergyValuesForType = function(type, synergies) {
+BingoGenerator.prototype.filterSynergyValuesForType = function (type, synergies) {
     synergies.sortNumerically();
 
     var filter = this.synergyFilters[type] || "";
@@ -674,7 +628,7 @@ BingoGenerator.prototype.filterSynergyValuesForType = function(type, synergies) 
 };
 
 // given aggregated type synergies for the row, calculates the effective synergy for that row
-BingoGenerator.prototype.calculateEffectiveSynergyForSquares = function(synergiesForSquares) {
+BingoGenerator.prototype.calculateEffectiveSynergyForSquares = function (synergiesForSquares) {
     var typeSynergies = this.calculateCombinedTypeSynergies(synergiesForSquares);
     var rowtypeSynergies = this.filterRowtypeSynergies(synergiesForSquares);
 
@@ -735,7 +689,8 @@ ootBingoGenerator = function (bingoList, opts) {
         console.log(iterations);
     }
 
-    card["meta"] = {iterations: iterations};
+    card["meta"] = { iterations: iterations };
 
     return card;
 };
+
