@@ -3,6 +3,7 @@ import sys
 import json
 import io
 import copy
+from collections import OrderedDict
 
 VERSION = sys.argv[1]
 GOAL_LIST_PATH = sys.argv[2]
@@ -19,13 +20,14 @@ with open(f'{VERSION}/exclude.txt', 'r') as file:
 goals_to_exclude = [goal.lower() for goal in goals_to_exclude]
 
 goal_list_file = goal_list_file.replace('var bingoList = ', '')
-goal_list = json.loads(goal_list_file)
+goal_list = json.loads(goal_list_file, object_pairs_hook=OrderedDict)
 
 if 'short' in goal_list:
     del goal_list['short']
 
 print(f"Going through goal list ({VERSION}) at '{GOAL_LIST_PATH}'...")
 beginner_goal_list = copy.deepcopy(goal_list)
+print(beginner_goal_list['normal'].keys())
 handled_goals = []
 for difficulty, goals in goal_list['normal'].items():
     beginner_goals = []
@@ -41,7 +43,7 @@ for difficulty, goals in goal_list['normal'].items():
         else:
             print(f"! '{goal['name']}' not present in include.txt nor exclude.txt, will be excluded")
     beginner_goal_list['normal'][difficulty] = beginner_goals
-
+print(beginner_goal_list['normal'].keys())
 print('\nBeginner Goal list completed.')
 for goal in goals_to_include:
     if goal not in handled_goals:
@@ -52,8 +54,8 @@ for goal in goals_to_exclude:
         print(f"! Goal to exclude '{goal}' was not present in the goal list")
 
 print(handled_goals)
-
-beginner_goal_list_string = 'var bingoList = ' + json.dumps(beginner_goal_list, ensure_ascii=False).encode('utf8').decode()
+print(beginner_goal_list['normal'].keys())
+beginner_goal_list_string = 'var bingoList = ' + json.dumps(beginner_goal_list, indent=4, ensure_ascii=False).encode('utf8').decode()
 
 file_name = f"{VERSION}/output-goallist-{VERSION}.js"
 with io.open(file_name, 'w', encoding="utf-8") as file:
