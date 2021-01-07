@@ -24,4 +24,4 @@ yarn-error.log*
 
 # python script
 .idea/
-output-goallist-*.js
+output-beginner-goal-list-*.js

@@ -361,7 +361,7 @@ BingoGenerator.prototype.getGoalsInTimeRange = function (minTime, maxTime) {
     // if linear scan ends up being too slow, we can optimize this by finding the min using binary search
     // and bailing out early after the first goal exceeds maxTime
     return this.goalsList.filter(function (goal) {
-        return minTime <= goal.time && goal.time <= maxTime && goal.beginnervars.included === 1;
+        return minTime <= goal.time && goal.time <= maxTime;
     });
 };
 
